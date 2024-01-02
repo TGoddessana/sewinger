@@ -75,22 +75,26 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
 
-      - name: Create a GitHub release
+      - name: Create Release
+        id: create_release
         if: steps.check-version.outputs.tag
-        uses: ncipollo/release-action@v1
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag: ${{ steps.check-version.outputs.tag }}
-          name: Release ${{ steps.check-version.outputs.tag }}
+          tag_name: ${{ steps.check-version.outputs.tag }}
+          release_name: Release ${{ steps.check-version.outputs.tag }}
           body: |
-            ${{ steps.check-version.outputs.changelog }}
+            Changes in this Release
+            - ${{ steps.check-version.outputs.tag }}
           draft: false
+          prerelease: false
 
-      - name: Create a GitHub release draft
-        if: "! steps.check-version.outputs.tag"
-        uses: ncipollo/release-action@v1
+      - name: Generate release notes
+        id: release_notes
+        if: steps.check-version.outputs.tag
+        uses: conventional-changelog/gh-release@v1
         with:
-          tag: draft release
-          name: draft release
-          body: |
-            ${{ steps.check-version.outputs.changelog }}
-          draft: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tag-prefix: 'v'
+          output-file: 'RELEASE_NOTES.md'
