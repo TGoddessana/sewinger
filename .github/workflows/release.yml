@@ -90,8 +90,8 @@ jobs:
         if: "! steps.check-version.outputs.tag"
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.check-version.outputs.tag }}
-          name: Release ${{ steps.check-version.outputs.tag }}
+          tag: draft at ${timestamp}
+          name: draft release at ${timestamp}
           body: |
             ${{ steps.check-version.outputs.changelog }}
           draft: true
