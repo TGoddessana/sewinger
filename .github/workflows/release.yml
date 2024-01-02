@@ -93,8 +93,7 @@ jobs:
       - name: Generate release notes
         id: release_notes
         if: steps.check-version.outputs.tag
-        uses: conventional-changelog/gh-release@v1
+        uses: TriPSs/conventional-changelog-action@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          tag-prefix: 'v'
           output-file: 'RELEASE_NOTES.md'
