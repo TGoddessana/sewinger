@@ -1,6 +1,9 @@
 name: Deploy Docs
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [closed]
     branches:
