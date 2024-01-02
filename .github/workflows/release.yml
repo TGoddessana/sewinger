@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
 
 jobs:
   build-and-deploy:
@@ -77,26 +75,28 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
 
-      - name: Create release draft
-        if: "! steps.check-version.outputs.tag"
-        uses: ncipollo/release-action@v1.13.0
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
         with:
-          name: ${{ steps.check-version.outputs.tag }}
-          tag: ${{ steps.check-version.outputs.tag }}
-          body: ${{ steps.check-version.outputs.changelog }}
-          prerelease: true
-          draft: true
-          commit: ${{ github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
 
-      - name: Create release
-        if: steps.check-version.outputs.tag
-        uses: ncipollo/release-action@v1.13.0
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.check-version.outputs.tag }}
-          tag: ${{ steps.check-version.outputs.tag }}
-          body: ${{ steps.check-version.outputs.changelog }}
-          prerelease: false
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: |
+            ${{ steps.tag_version.outputs.changelog }}
           draft: false
-          commit: ${{ github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+
+      - name: Create a GitHub release draft
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: |
+            ${{ steps.tag_version.outputs.changelog }}
+          draft: true
+          prerelease: true
