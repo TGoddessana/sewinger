@@ -34,37 +34,44 @@ jobs:
           cd docs
           poetry run make html
 
-      - name: Check Poetry Version
-        id: check_poetry_version
+      - name: Check if there is a parent commit
+        id: check-parent-commit
         run: |
-          CURRENT_VERSION=$(poetry version --no-ansi | awk '{print $2}')
-          PREVIOUS_VERSION=$(cat .previous_version || echo "none")
+          echo "::set-output name=sha::$(git rev-parse --verify --quiet HEAD^)"
 
-          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-            echo "Poetry version has changed. Deploying to PyPI."
-            echo "$CURRENT_VERSION" > .previous_version
-          else
-            echo "Poetry version has not changed. Checking if it is a new version."
+      - name: Detect and tag new version
+        id: check-version
+        if: steps.check-parent-commit.outputs.sha
+        uses: salsify/action-detect-and-tag-new-version@v2.0.3
+        with:
+          version-command: |
+            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
 
-            PACKAGE_NAME=$(poetry version --no-ansi | awk '{print $1}')
-            PACKAGE_VERSION=$(poetry version --no-ansi | awk '{print $2}')
-
-            if ! poetry version --list | grep -q "$PACKAGE_NAME $PACKAGE_VERSION"; then
-              echo "New version detected. Not deploying to testpypi."
-              exit 0
-            else
-              echo "Same version detected. Deploying to testpypi."
-              echo "testpypi" >> $GITHUB_ENV
-            fi
-          fi
-
-      - name: Deploy to PyPI or TestPyPI
+      - name: Bump version for developmental release
+        if: "! steps.check-version.outputs.tag"
         run: |
-          if [ "$GITHUB_ENV" = "testpypi" ]; then
-            poetry publish --build --repository testpypi
-          else
-            poetry publish --build
-          fi
+          poetry version patch &&
+          version=$(poetry version | awk '{ print $2 }') &&
+          poetry version $version.dev.$(date +%s)
+
+      - name: Build package
+        run: |
+          poetry build --ansi
+
+      - name: Publish package on PyPI
+        if: steps.check-version.outputs.tag
+        uses: pypa/gh-action-pypi-publish@v1.8.11
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Publish package on TestPyPI
+        if: "! steps.check-version.outputs.tag"
+        uses: pypa/gh-action-pypi-publish@v1.8.11
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
 
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
