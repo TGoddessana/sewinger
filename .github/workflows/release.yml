@@ -84,15 +84,13 @@ jobs:
           body: |
             ${{ steps.check-version.outputs.changelog }}
           draft: false
-          prerelease: false
 
       - name: Create a GitHub release draft
         if: "! steps.check-version.outputs.tag"
         uses: ncipollo/release-action@v1
         with:
-          tag: draft at ${timestamp}
-          name: draft release at ${timestamp}
+          tag: draft release
+          name: draft release
           body: |
             ${{ steps.check-version.outputs.changelog }}
           draft: true
-          prerelease: true
