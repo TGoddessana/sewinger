@@ -1,4 +1,4 @@
-name: release
+name: Deploy Docs
 
 on:
   pull_request:
@@ -23,36 +23,48 @@ jobs:
       - name: Install Poetry
         run: |
           pip install poetry
-          poetry install
+          poetry install 
           poetry --version
-
-      - name: Check Poetry Version
-        id: check_version
-        run: echo ::set-output name=POETRY_VERSION::$(poetry --version)
-
-      - name: Build and Deploy to PyPI
-        run: |
-          # Add logic to check if the version has changed
-          if [[ "${{ steps.check_version.outputs.POETRY_VERSION }}" != "$(poetry --version)" ]]; then
-            poetry build
-            poetry publish --build
-          else
-            echo "Poetry version is not different from the previous one. Deploying to testpypi."
-            poetry build
-            poetry publish --repository testpypi --build
-          fi
 
       - name: Build docs
         run: |
           cd docs
-          make html
+          poetry run make html
+
+      - name: Check Poetry Version
+        id: check_poetry_version
+        run: |
+          CURRENT_VERSION=$(poetry version --no-ansi | awk '{print $2}')
+          PREVIOUS_VERSION=$(cat .previous_version || echo "none")
+
+          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+            echo "Poetry version has changed. Deploying to PyPI."
+            echo "$CURRENT_VERSION" > .previous_version
+          else
+            echo "Poetry version has not changed. Checking if it is a new version."
+
+            PACKAGE_NAME=$(poetry version --no-ansi | awk '{print $1}')
+            PACKAGE_VERSION=$(poetry version --no-ansi | awk '{print $2}')
+
+            if ! poetry version --list | grep -q "$PACKAGE_NAME $PACKAGE_VERSION"; then
+              echo "New version detected. Not deploying to testpypi."
+              exit 0
+            else
+              echo "Same version detected. Deploying to testpypi."
+              echo "testpypi" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: Deploy to PyPI or TestPyPI
+        run: |
+          if [ "$GITHUB_ENV" = "testpypi" ]; then
+            poetry publish --build --repository testpypi
+          else
+            poetry publish --build
+          fi
 
       - name: Deploy docs
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          # Deploy docs only after a successful deployment to PyPI, not testpypi
-          poetry build
-          poetry publish --build
-          cd docs
-          make html
-          echo "Deploying documentation after successful deployment to Pypi."
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
