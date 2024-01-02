@@ -9,11 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -22,11 +29,6 @@ jobs:
           pip install poetry
           poetry install 
           poetry --version
-
-      - name: Build docs
-        run: |
-          cd docs
-          poetry run make html
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -69,23 +71,21 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
 
+      - name: Build docs
+        run: |
+          cd docs
+          poetry run make html
+
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
 
-      - name: Create Release
-        id: create_release
-        if: steps.check-version.outputs.tag
-        uses: actions/create-release@v1
+      - name: Publish the release notes
+        uses: release-drafter/release-drafter@v5.25.0
+        with:
+          publish: ${{ steps.check-version.outputs.tag != '' }}
+          tag: ${{ steps.check-version.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.check-version.outputs.tag }}
-          release_name: Release ${{ steps.check-version.outputs.tag }}
-          body: |
-            Changes in this Release
-            - ${{ steps.check-version.outputs.tag }}
-          draft: false
-          prerelease: false
