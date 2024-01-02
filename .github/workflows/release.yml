@@ -75,6 +75,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
 
+      - name: Get the version
+        id: get_version
+        run: echo "::set-output name=version::$(poetry version --short)"
+
       - name: Create Draft Release
         id: create_draft_release
         if: "! steps.check-version.outputs.tag"
@@ -82,11 +86,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.check-version.outputs.tag }}
-          release_name: Draft Release ${{ steps.check-version.outputs.tag }}
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Draft Release ${{ steps.get_version.outputs.version }}
           body: |
             Changes in this Draft Release
-            - ${{ steps.check-version.outputs.tag }}
+            - ${{ steps.get_version.outputs.version }}
           draft: true
           prerelease: false
 
@@ -104,11 +108,3 @@ jobs:
             - ${{ steps.check-version.outputs.tag }}
           draft: false
           prerelease: false
-
-      - name: Generate release notes
-        id: release_notes
-        if: steps.check-version.outputs.tag
-        uses: TriPSs/conventional-changelog-action@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: 'RELEASE_NOTES.md'
