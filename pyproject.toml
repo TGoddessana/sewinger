@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sewinger"
-version = "0.1.0"
+version = "0.1.1"
 description = "A simple, lightweight Python dependency injection framework. Get sewing right away."
 authors = ["goddessana <twicegoddessana1229@gmail.com>"]
 license = "MIT"
