@@ -11,7 +11,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-#    if: github.event.pull_request.merged == true
 
     steps:
       - name: Checkout code
@@ -53,9 +52,11 @@ jobs:
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          poetry version patch
+          version=$(poetry version --short)
+          timestamp=$(date +%s)
+          dev_version="${version}.dev.${timestamp}"
+          poetry version $dev_version
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
@@ -107,5 +108,3 @@ jobs:
           draft: false
           commit: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
-
