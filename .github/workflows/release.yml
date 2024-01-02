@@ -32,10 +32,6 @@ jobs:
           cd docs
           poetry run make html
 
-      - name: Build package
-        run: |
-          poetry build --ansi
-
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
@@ -57,6 +53,10 @@ jobs:
           timestamp=$(date +%s)
           dev_version="${version}.dev.${timestamp}"
           poetry version $dev_version
+
+      - name: Build package
+        run: |
+          poetry build --ansi
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
