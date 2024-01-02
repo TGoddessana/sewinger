@@ -1,2 +1,14 @@
+categories:
+  - title: ":beetle: Fixes"
+    label: "bug"
+  - title: ":rocket: Features"
+    label: "feature"
+  - title: ":books: Documentation"
+    label: "documentation"
+  - title: ":construction_worker: Continuous Integration"
+    label: "ci"
+  - title: ":rotating_light: Testing"
+    label: "testing"
+
 template: |
   $CHANGES
