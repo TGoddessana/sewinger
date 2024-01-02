@@ -1,5 +1,4 @@
-name: Deploy Docs
-
+name: Build and Deploy
 on:
   push:
     branches:
@@ -78,3 +77,27 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
+
+      - name: Create release draft
+        if: "! steps.check-version.outputs.tag"
+        uses: ncipollo/release-action@v1.0.0
+        with:
+          name: ${{ steps.check-version.outputs.tag }}
+          tag: ${{ steps.check-version.outputs.tag }}
+          body: ${{ steps.check-version.outputs.changelog }}
+          prerelease: true
+          draft: true
+          commit: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release
+        if: steps.check-version.outputs.tag
+        uses: ncipollo/release-action@v1.0.0
+        with:
+          name: ${{ steps.check-version.outputs.tag }}
+          tag: ${{ steps.check-version.outputs.tag }}
+          body: ${{ steps.check-version.outputs.changelog }}
+          prerelease: false
+          draft: false
+          commit: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
