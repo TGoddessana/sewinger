@@ -33,6 +33,10 @@ jobs:
           cd docs
           poetry run make html
 
+      - name: Build package
+        run: |
+          poetry build --ansi
+
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
@@ -68,9 +72,6 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
 
-      - name: Build package
-        run: |
-          poetry build --ansi
 
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
