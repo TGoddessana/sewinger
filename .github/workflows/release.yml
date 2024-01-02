@@ -1,8 +1,8 @@
-name: Deploy Docs
+name: release
 
 on:
   pull_request:
-    types: [ closed ]
+    types: [closed]
     branches:
       - main
 
@@ -23,8 +23,24 @@ jobs:
       - name: Install Poetry
         run: |
           pip install poetry
-          poetry install 
+          poetry install
           poetry --version
+
+      - name: Check Poetry Version
+        id: check_version
+        run: echo ::set-output name=POETRY_VERSION::$(poetry --version)
+
+      - name: Build and Deploy to PyPI
+        run: |
+          # Add logic to check if the version has changed
+          if [[ "${{ steps.check_version.outputs.POETRY_VERSION }}" != "$(poetry --version)" ]]; then
+            poetry build
+            poetry publish --build
+          else
+            echo "Poetry version is not different from the previous one. Deploying to testpypi."
+            poetry build
+            poetry publish --repository testpypi --build
+          fi
 
       - name: Build docs
         run: |
@@ -32,7 +48,11 @@ jobs:
           make html
 
       - name: Deploy docs
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Deploy docs only after a successful deployment to PyPI, not testpypi
+          poetry build
+          poetry publish --build
+          cd docs
+          make html
+          echo "Deploying documentation after successful deployment to Pypi."
