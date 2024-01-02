@@ -75,12 +75,27 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
 
+      - name: Create Draft Release
+        id: create_draft_release
+        if: "! steps.check-version.outputs.tag"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps.check-version.outputs.tag }}
+          release_name: Draft Release ${{ steps.check-version.outputs.tag }}
+          body: |
+            Changes in this Draft Release
+            - ${{ steps.check-version.outputs.tag }}
+          draft: true
+          prerelease: false
+
       - name: Create Release
         id: create_release
         if: steps.check-version.outputs.tag
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ steps.check-version.outputs.tag }}
           release_name: Release ${{ steps.check-version.outputs.tag }}
