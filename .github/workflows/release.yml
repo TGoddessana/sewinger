@@ -53,10 +53,6 @@ jobs:
           version=$(poetry version | awk '{ print $2 }') &&
           poetry version $version.dev.$(date +%s)
 
-      - name: Build package
-        run: |
-          poetry build --ansi
-
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
         uses: pypa/gh-action-pypi-publish@v1.8.11
@@ -72,6 +68,10 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
 
+      - name: Build package
+        run: |
+          poetry build --ansi
+
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -80,7 +80,7 @@ jobs:
 
       - name: Create release draft
         if: "! steps.check-version.outputs.tag"
-        uses: ncipollo/release-action@v1.0.0
+        uses: ncipollo/release-action@v1.13.0
         with:
           name: ${{ steps.check-version.outputs.tag }}
           tag: ${{ steps.check-version.outputs.tag }}
@@ -92,7 +92,7 @@ jobs:
 
       - name: Create release
         if: steps.check-version.outputs.tag
-        uses: ncipollo/release-action@v1.0.0
+        uses: ncipollo/release-action@v1.13.0
         with:
           name: ${{ steps.check-version.outputs.tag }}
           tag: ${{ steps.check-version.outputs.tag }}
