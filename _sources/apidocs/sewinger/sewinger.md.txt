@@ -1,0 +1,42 @@
+# {py:mod}`sewinger`
+
+```{py:module} sewinger
+```
+
+```{autodoc2-docstring} sewinger
+:allowtitles:
+```
+
+## Package Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`some_function <sewinger.some_function>`
+  - ```{autodoc2-docstring} sewinger.some_function
+    :summary:
+    ```
+* - {py:obj}`my_function <sewinger.my_function>`
+  - ```{autodoc2-docstring} sewinger.my_function
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} some_function()
+:canonical: sewinger.some_function
+
+```{autodoc2-docstring} sewinger.some_function
+```
+````
+
+````{py:function} my_function(arg1, arg2)
+:canonical: sewinger.my_function
+
+```{autodoc2-docstring} sewinger.my_function
+```
+````
