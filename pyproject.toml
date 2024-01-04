@@ -12,9 +12,10 @@ python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
 sphinx = "^7.2.6"
-sphinxawesome-theme = "^5.0.1"
 myst-parser = "^2.0.0"
+sphinxawesome-theme = "^5.0.1"
 pytest = "^7.4.4"
+sphinx-autodoc2 = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core"]
