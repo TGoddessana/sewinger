@@ -27,6 +27,7 @@ MANIFEST
 
 # documentation
 docs/_build/
+docs/apidocs/
 
 # Unit test / coverage reports
 htmlcov/
