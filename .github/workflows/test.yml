@@ -1,4 +1,4 @@
-name: Linting
+name: Linting and Testing
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - "**"
 
 jobs:
-  pre-commit:
+  lint_and_mypy_test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
