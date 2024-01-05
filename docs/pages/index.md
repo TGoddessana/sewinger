@@ -6,5 +6,5 @@ Sewinger is a Python dependency injection framework that supports lightweight, s
 :hidden:
 :caption: 📖 API Reference
 
-../apidocs/index.md
+../apidocs/index
 ```

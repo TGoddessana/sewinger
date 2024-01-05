@@ -17,10 +17,11 @@ source_suffix = [
     ".md",
 ]
 
-master_doc = "index"
+master_doc = "pages/index"
 
 # autodoc2 settings.
 autodoc2_packages = [
     "../sewinger/",
 ]
 autodoc2_render_plugin = "myst"
+myst_enable_extensions = ["fieldlist"]
