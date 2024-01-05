@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install poetry
-          poetry install 
+          poetry install
           poetry --version
 
       - name: Check if there is a parent commit
